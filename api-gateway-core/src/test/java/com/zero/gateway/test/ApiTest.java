@@ -25,34 +25,57 @@ public class ApiTest {
     private final Logger logger = LoggerFactory.getLogger(ApiTest.class);
 
     /**
-     * 测试：http://localhost:7397/wg/activity/sayHi
+     * 测试：
+     * http://localhost:7397/wg/activity/sayHi
+     * 参数：
+     * {
+     *     "str": "10001"
+     * }
+     *
+     * http://localhost:7397/wg/activity/insert
+     * 参数：
+     * {
+     *     "name":"小傅哥",
+     *     "uid":"10001"
+     * }
      */
     @Test
     public void test_gateway() throws InterruptedException, ExecutionException {
-        //调用流程
-        // 1. 创建配置信息加载注册  实例化Configuration配置，加载应用配置、HTTP声明（目前是硬编码方式）
+        // 1. 创建配置信息加载注册
         Configuration configuration = new Configuration();
-        HttpStatement httpStatement = new HttpStatement(
+
+        HttpStatement httpStatement01 = new HttpStatement(
                 "api-gateway-test",
                 "cn.bugstack.gateway.rpc.IActivityBooth",
                 "sayHi",
+                "java.lang.String",
                 "/wg/activity/sayHi",
                 HttpCommandType.GET);
-        configuration.addMapper(httpStatement);
+
+        HttpStatement httpStatement02 = new HttpStatement(
+                "api-gateway-test",
+                "cn.bugstack.gateway.rpc.IActivityBooth",
+                "insert",
+                "cn.bugstack.gateway.rpc.dto.XReq",
+                "/wg/activity/insert",
+                HttpCommandType.POST);
+
+        configuration.addMapper(httpStatement01);
+        configuration.addMapper(httpStatement02);
 
         // 2. 基于配置构建会话工厂
         DefaultGatewaySessionFactory gatewaySessionFactory = new DefaultGatewaySessionFactory(configuration);
 
-        // 3. 创建网关网络服务
+        // 3. 创建启动网关网络服务
         GatewaySocketServer server = new GatewaySocketServer(gatewaySessionFactory);
-        // 4. 启动网关网络服务
+
         Future<Channel> future = Executors.newFixedThreadPool(2).submit(server);
         Channel channel = future.get();
 
         if (null == channel) throw new RuntimeException("netty server start error channel is null");
 
         while (!channel.isActive()) {
-            logger.info("netty server gateway is starting ...");
+            logger.info("netty server gateway start Ing ...");
             Thread.sleep(500);
         }
         logger.info("netty server gateway start Done! {}", channel.localAddress());

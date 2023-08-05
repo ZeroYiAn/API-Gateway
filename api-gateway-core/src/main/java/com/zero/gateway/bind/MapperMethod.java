@@ -5,6 +5,7 @@ import com.zero.gateway.session.Configuration;
 import com.zero.gateway.session.GatewaySession;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
  * @description:  映射绑定调用方法
@@ -30,17 +31,15 @@ public class MapperMethod {
 
     /**
      * 基于网关接口注册时的方法，get、post、put、delete做不同的逻辑处理
-     * @param session
-     * @param args
-     * @return
      */
-    public Object execute(GatewaySession session, Object args) {
+    public Object execute(GatewaySession session, Map<String, Object> params) {
         Object result = null;
         switch (command) {
             case GET:
-                result = session.get(methodName, args);
+                result = session.get(methodName, params);
                 break;
             case POST:
+                result = session.post(methodName, params);
                 break;
             case PUT:
                 break;
@@ -51,5 +50,6 @@ public class MapperMethod {
         }
         return result;
     }
+
 
 }

@@ -2,6 +2,8 @@ package com.zero.gateway.session;
 
 import com.zero.gateway.bind.IGenericReference;
 
+import java.util.Map;
+
 /**
  * @description: 用户处理网关 HTTP 请求
  * @author: ZeroYiAn
@@ -9,10 +11,11 @@ import com.zero.gateway.bind.IGenericReference;
  */
 public interface GatewaySession {
 
-    Object get(String uri, Object parameter);
+    Object get(String methodName, Map<String, Object> params);
+
+    Object post(String methodName, Map<String, Object> params);
 
     IGenericReference getMapper();
 
     Configuration getConfiguration();
-
 }
