@@ -2,6 +2,9 @@ package com.zero.gateway.session;
 
 import com.zero.gateway.bind.IGenericReference;
 import com.zero.gateway.bind.MapperRegistry;
+import com.zero.gateway.datasource.Connection;
+import com.zero.gateway.executor.Executor;
+import com.zero.gateway.executor.SimpleExecutor;
 import com.zero.gateway.mapping.HttpStatement;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ReferenceConfig;
@@ -67,6 +70,12 @@ public class Configuration {
         mapperRegistry.addMapper(httpStatement);
     }
 
+    /**
+     * 获取泛化调用服务的映射关系，实际上是从mapperRegistry中获得的
+     * @param uri
+     * @param gatewaySession
+     * @return
+     */
     public IGenericReference getMapper(String uri, GatewaySession gatewaySession) {
         return mapperRegistry.getMapper(uri, gatewaySession);
     }
@@ -77,6 +86,16 @@ public class Configuration {
 
     public HttpStatement getHttpStatement(String uri) {
         return httpStatements.get(uri);
+    }
+
+
+    /**
+     * 创建执行器
+     * @param connection
+     * @return
+     */
+    public Executor newExecutor(Connection connection) {
+        return new SimpleExecutor(this, connection);
     }
 
 }

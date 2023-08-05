@@ -7,6 +7,7 @@ import com.zero.gateway.session.GatewaySession;
 import com.zero.gateway.session.defaults.DefaultGatewaySessionFactory;
 import com.zero.gateway.socket.BaseHandler;
 import com.zero.gateway.socket.agreement.RequestParser;
+import com.zero.gateway.socket.agreement.ResponseParser;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
@@ -36,42 +37,21 @@ public class GatewayServerHandler extends BaseHandler<FullHttpRequest> {
     @Override
     protected void session(ChannelHandlerContext ctx, final Channel channel, FullHttpRequest request) {
         logger.info("网关接收请求 uri：{} method：{}", request.uri(), request.method());
+        // 1. 解析请求参数
+        RequestParser requestParser = new RequestParser(request);
+        String uri = requestParser.getUri();
+        if (null == uri) return;
+        Map<String, Object> args = new RequestParser(request).parse();
 
-        // 解析请求参数
-        Map<String, Object> requestObj = new RequestParser(request).parse();
-
-        // 返回信息控制：简单处理
-        String uri = request.uri();
-        int idx = uri.indexOf("?");
-        uri = idx > 0 ? uri.substring(0, idx) : uri;
-        if (uri.equals("/favicon.ico")) return;
-
-        //通过会话工厂获取会话
+        // 2. 调用会话服务
         GatewaySession gatewaySession = gatewaySessionFactory.openSession(uri);
+        // getMapper()方法(根据映射关系)返回的是一个泛化调用服务的代理对象
         IGenericReference reference = gatewaySession.getMapper();
-        String result = reference.$invoke(requestObj) + " " + System.currentTimeMillis();
-       // String result = reference.$invoke("test") + " " + System.currentTimeMillis();
+        //TODO 通过返沪服务代理类的对象调用RPC服务，进而调用MapperProxy#intercept()方法--->调用execute()方法-->根据请求类型，去真正地调用rpc服务-->最终泛化服务结果
+        Object result = reference.$invoke(args);
 
-        // 返回信息处理
-        DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-
-        // 设置回写数据
-        response.content().writeBytes(JSON.toJSONBytes(result, SerializerFeature.PrettyFormat));
-
-        // 头部信息设置
-        HttpHeaders heads = response.headers();
-        // 返回内容类型
-        heads.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON + "; charset=UTF-8");
-        // 响应体的长度
-        heads.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
-        // 配置持久连接
-        heads.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-        // 配置跨域访问
-        heads.add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
-        heads.add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS, "*");
-        heads.add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, PUT, DELETE");
-        heads.add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
-
+        // 3. 封装返回结果
+        DefaultFullHttpResponse response = new ResponseParser().parse(result);
         channel.writeAndFlush(response);
     }
 

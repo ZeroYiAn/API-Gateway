@@ -10,6 +10,11 @@ import java.util.Map;
  */
 public interface IGenericReference {
 
-    String $invoke(Map<String, Object> params);
+    /**
+     * 调用IGenericReference#$invoke方法，就会执行泛化调用代理对象MapperProxy#intercept()方法
+     * @param params
+     * @return
+     */
+    Object $invoke(Map<String, Object> params);
 
 }

@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @description: 映射器代理工厂
  * 用于实例化映射器代理类，其实就是使用cglib创建RPC泛化调用服务的代理对象
+ * MapperProxyFactory创建出的代理类的type，就是IGenericReference接口类型
  * @author: ZeroYiAn
  * @time: 2023/8/4
  */
