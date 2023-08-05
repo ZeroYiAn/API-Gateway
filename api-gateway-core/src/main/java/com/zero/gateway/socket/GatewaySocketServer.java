@@ -15,7 +15,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Callable;
 
 /**
- * @description: 网关网络通信服务：创建Netty服务端
+ * @description: 网关网络通信服务：  创建Netty服务端
  * GatewaySocketServer 实现Callable接口，重写call方法，在call方法中创建Netty服务端，让Netty服务端在线程池中启动，不占用主线程
  * @author: ZeroYiAn
  * @time: 2023/8/3
